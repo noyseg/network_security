@@ -41,10 +41,12 @@ def create_app(config_object: type = Config) -> Flask:
     app.teardown_appcontext(db_module.close_connection)
 
     from app.campaign.routes import bp as campaign_bp
+    from app.message.routes import bp as message_bp
+
     app.register_blueprint(campaign_bp)
+    app.register_blueprint(message_bp)
 
     # Feature modules still to be added in subsequent commits:
-    #   - app.message.routes
     #   - app.landing.routes
     #   - app.logging_mod.routes
     #   - app.dashboard.routes

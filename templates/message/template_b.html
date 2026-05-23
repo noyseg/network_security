@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.subject }} (variant B){% endblock %}
+
+{% block content %}
+<div class="sim-banner sim-banner-urgent">
+    SIMULATED MESSAGE &mdash; variant B &mdash;
+    {% if preview %}preview mode (no logging){% else %}educational test{% endif %}
+</div>
+
+<div class="message-card message-card-urgent">
+    <div class="message-header">
+        <div><strong>From:</strong> {{ campaign.sender_name }} (simulated)</div>
+        <div><strong>Subject:</strong> &#9888; {{ campaign.subject }}</div>
+    </div>
+    <div class="message-body">{{ body }}</div>
+    <div class="message-cta">
+        <a class="button button-urgent" href="{{ landing_url }}">{{ cta_text }} &raquo;</a>
+    </div>
+</div>
+
+{% if not preview %}
+<img src="{{ tracking_pixel_url }}" width="1" height="1" alt="" style="display:block;">
+{% endif %}
+{% endblock %}
