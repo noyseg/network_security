@@ -1,9 +1,26 @@
-.venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.egg-info/
 .pytest_cache/
-.env
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local data
 data/*.sqlite
-instance/
-.DS_Store
+data/*.sqlite3
+data/*.db
+
+# Editor / OS
+.idea/
 .vscode/
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
