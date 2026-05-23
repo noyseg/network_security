@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Campaigns{% endblock %}
+
+{% block content %}
+<h1>Campaigns</h1>
+
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+<p><a class="button" href="{{ url_for('campaign.new_form') }}">+ New campaign</a></p>
+
+{% if campaigns %}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Sender (fictional)</th>
+            <th>Type</th>
+            <th>Created</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for c in campaigns %}
+        <tr>
+            <td>{{ c.id }}</td>
+            <td>{{ c.title }}</td>
+            <td>{{ c.sender_name }}</td>
+            <td>{{ c.template_type }}</td>
+            <td>{{ c.created_at }}</td>
+            <td><a href="{{ url_for('campaign.detail', campaign_id=c.id) }}">view</a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty">No campaigns yet. <a href="{{ url_for('campaign.new_form') }}">Create one</a>.</p>
+{% endif %}
+{% endblock %}

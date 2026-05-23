@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}New campaign{% endblock %}
+
+{% block content %}
+<h1>New campaign</h1>
+
+<p class="hint">
+    The sender name and template bodies must not impersonate any real
+    organization. The landing path must be a local route under /landing/.
+</p>
+
+{% if errors %}
+<ul class="errors">
+{% for err in errors %}<li>{{ err }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<form method="post" action="{{ url_for('campaign.create') }}">
+    <label>Title
+        <input name="title" required value="{{ previous.get('title', '') }}">
+    </label>
+
+    <label>Sender name (fictional)
+        <input name="sender_name" required value="{{ previous.get('sender_name', '') }}">
+    </label>
+
+    <label>Subject line
+        <input name="subject" required value="{{ previous.get('subject', '') }}">
+    </label>
+
+    <label>Body A
+        <textarea name="body_a" required rows="6">{{ previous.get('body_a', '') }}</textarea>
+    </label>
+
+    <label>Body B (only required for A/B template type)
+        <textarea name="body_b" rows="6">{{ previous.get('body_b', '') }}</textarea>
+    </label>
+
+    <label>Call-to-action text
+        <input name="cta_text" required value="{{ previous.get('cta_text', '') }}">
+    </label>
+
+    <label>Landing path (must start with /landing/)
+        <input name="landing_path" required value="{{ previous.get('landing_path', '/landing/1') }}">
+    </label>
+
+    <label>Template type
+        <select name="template_type">
+            <option value="single" {% if previous.get('template_type') == 'single' %}selected{% endif %}>single</option>
+            <option value="ab" {% if previous.get('template_type') == 'ab' %}selected{% endif %}>ab</option>
+        </select>
+    </label>
+
+    <button type="submit">Create campaign</button>
+</form>
+{% endblock %}

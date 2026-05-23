@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Campaign {{ campaign.id }}{% endblock %}
+
+{% block content %}
+<h1>{{ campaign.title }}</h1>
+
+<dl class="kv">
+    <dt>ID</dt><dd>{{ campaign.id }}</dd>
+    <dt>Sender (fictional)</dt><dd>{{ campaign.sender_name }}</dd>
+    <dt>Subject line</dt><dd>{{ campaign.subject }}</dd>
+    <dt>Template type</dt><dd>{{ campaign.template_type }}</dd>
+    <dt>Landing path</dt><dd>{{ campaign.landing_path }}</dd>
+    <dt>Created</dt><dd>{{ campaign.created_at }}</dd>
+</dl>
+
+<h2>Body A</h2>
+<pre class="body">{{ campaign.body_a }}</pre>
+
+{% if campaign.template_type == 'ab' %}
+<h2>Body B</h2>
+<pre class="body">{{ campaign.body_b }}</pre>
+{% endif %}
+
+<p class="actions">
+    <a class="button" href="/message/{{ campaign.id }}/preview">Preview message</a>
+    <a class="button" href="/admin/dashboard/{{ campaign.id }}">Open dashboard</a>
+</p>
+{% endblock %}

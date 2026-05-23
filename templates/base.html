@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Phishing Simulation Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body{% block body_attrs %}{% endblock %}>
+    <header class="site-header">
+        <strong>Phishing Simulation Platform</strong>
+        <span class="banner-warning">LOCAL / LAB USE ONLY &mdash; NO REAL EMAIL, NO REAL CREDENTIALS</span>
+        <nav>
+            <a href="{{ url_for('campaign.list_view') }}">Campaigns</a>
+            <a href="{{ url_for('campaign.new_form') }}">New campaign</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

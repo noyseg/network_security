@@ -15,7 +15,7 @@ not need to know their internals.
 
 import os
 
-from flask import Flask
+from flask import Flask, redirect
 
 from config import Config
 
@@ -33,24 +33,17 @@ def create_app(config_object: type = Config) -> Flask:
     )
     app.config.from_object(config_object)
 
-    # Make sure the data directory exists before the schema bootstrap runs.
     db_dir = os.path.dirname(app.config["DB_PATH"])
     os.makedirs(db_dir, exist_ok=True)
 
-    # Initialize the database schema (idempotent).
     from app import db as db_module
-
     db_module.init_schema()
-
-    # Close the per-request DB connection on teardown.
     app.teardown_appcontext(db_module.close_connection)
 
-    # --- Register feature blueprints ------------------------------------
-    # Imported here (not at module top) so that each feature module can
-    # itself import from ``app`` without circular imports.
+    from app.campaign.routes import bp as campaign_bp
+    app.register_blueprint(campaign_bp)
 
-    # Feature modules will be added in subsequent commits:
-    #   - app.campaign.routes
+    # Feature modules still to be added in subsequent commits:
     #   - app.message.routes
     #   - app.landing.routes
     #   - app.logging_mod.routes
@@ -58,10 +51,6 @@ def create_app(config_object: type = Config) -> Flask:
 
     @app.get("/")
     def _index():
-        return (
-            "Phishing simulation platform — local/lab use only. "
-            "See /admin/campaigns once that blueprint is wired up.",
-            200,
-        )
+        return redirect("/admin/campaigns")
 
     return app
