@@ -92,6 +92,7 @@ def render_context(
     return {
         "campaign": campaign,
         "variant": chosen,
+        "subject_code": subject_code or "",
         "body": body,
         "cta_text": campaign["cta_text"],
         "landing_url": landing_url,

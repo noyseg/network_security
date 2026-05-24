@@ -5,12 +5,14 @@ signature itself forbids receiving field names or values — only an
 integer count of inputs on the form.
 """
 
+from urllib.parse import urlencode
+
 from app.constants import EVENT_FAKE_SUBMIT_ATTEMPTED
 from app.logging_mod import service as logging_service
 
 
 MAX_FIELD_COUNT = 20
-DEBRIEF_URL = "/landing/debrief"
+DEBRIEF_PATH = "/landing/debrief"
 
 
 def handle_fake_submit(
@@ -38,4 +40,10 @@ def handle_fake_submit(
         variant,
         metadata={"field_count": field_count},
     )
-    return DEBRIEF_URL
+
+    query = urlencode({
+        "campaign_id": int(campaign_id),
+        "subject": subject_code,
+        "variant": variant,
+    })
+    return f"{DEBRIEF_PATH}?{query}"

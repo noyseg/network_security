@@ -90,4 +90,23 @@ def submit(campaign_id: int):
 
 @bp.get("/debrief")
 def debrief():
-    return render_template("landing/debrief.html")
+    subject_code = (request.args.get("subject") or "").strip()
+    variant = (request.args.get("variant") or "").strip()
+    campaign_id_raw = (request.args.get("campaign_id") or "").strip()
+    try:
+        campaign_id = int(campaign_id_raw) if campaign_id_raw else 0
+    except ValueError:
+        campaign_id = 0
+    # Only pass identifiers through when all three are present and the
+    # subject code is well-formed. Otherwise the page still renders, but
+    # tracker.js will no-op (no exit ping) because hasIdentifiers fails.
+    if not (campaign_id > 0 and is_valid_subject_code(subject_code) and variant):
+        campaign_id = 0
+        subject_code = ""
+        variant = ""
+    return render_template(
+        "landing/debrief.html",
+        campaign_id=campaign_id,
+        subject_code=subject_code,
+        variant=variant,
+    )
