@@ -1,9 +1,9 @@
 """Message service.
 
 Owns the deterministic A/B variant assignment and the rendering context
-for the simulated message templates. This module is import-only — it
-does not log events. The ``message_opened`` event will be wired into
-``render_context`` in a later commit, once the Logging service exists.
+for the simulated message templates. When a real subject (not preview)
+opens the message, ``render_context`` emits a ``message_opened`` event
+through the Logging service.
 """
 
 import hashlib
@@ -11,7 +11,8 @@ from typing import Optional
 from urllib.parse import urlencode
 
 from app.campaign import service as campaign_service
-from app.constants import TEMPLATE_SINGLE, VARIANT_A, VARIANT_B
+from app.constants import EVENT_MESSAGE_OPENED, TEMPLATE_SINGLE, VARIANT_A, VARIANT_B
+from app.logging_mod import service as logging_service
 from app.validators import is_valid_subject_code
 
 
@@ -67,6 +68,14 @@ def render_context(
 
     body = campaign["body_a"] if chosen == VARIANT_A else campaign["body_b"]
 
+    if not preview and subject_code:
+        logging_service.record_event(
+            EVENT_MESSAGE_OPENED,
+            int(campaign_id),
+            subject_code,
+            chosen,
+        )
+
     # Landing URL carries the subject + variant so the landing route can
     # log the click for the right pair.
     landing_query = {}
@@ -75,8 +84,6 @@ def render_context(
     landing_query["variant"] = chosen
     landing_url = f"{campaign['landing_path']}?{urlencode(landing_query)}"
 
-    # Pixel URL — the actual pixel route lands in a later commit, but
-    # the template references this URL so the wiring is ready.
     pixel_query = {"variant": chosen}
     if subject_code:
         pixel_query["subject"] = subject_code
