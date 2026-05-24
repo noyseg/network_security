@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Dashboard: {{ campaign.title }}{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+{% endblock %}
+
+{% block body_attrs %} data-campaign-id="{{ campaign.id }}"{% endblock %}
+
+{% block content %}
+<h1>Dashboard: {{ campaign.title }}</h1>
+<p class="hint">
+    Campaign #{{ campaign.id }} &middot; template <code>{{ campaign.template_type }}</code>
+    &middot; sender <em>{{ campaign.sender_name }}</em>
+</p>
+
+<div id="summary-tiles" class="tile-row">
+    <div class="tile"><div class="tile-label">Opens</div>          <div class="tile-value" id="tile-opens">&mdash;</div></div>
+    <div class="tile"><div class="tile-label">Clicks</div>         <div class="tile-value" id="tile-clicks">&mdash;</div></div>
+    <div class="tile"><div class="tile-label">Visits</div>         <div class="tile-value" id="tile-visits">&mdash;</div></div>
+    <div class="tile"><div class="tile-label">Submits</div>        <div class="tile-value" id="tile-submits">&mdash;</div></div>
+    <div class="tile"><div class="tile-label">Click rate</div>     <div class="tile-value" id="tile-click-rate">&mdash;</div></div>
+    <div class="tile"><div class="tile-label">Submit rate</div>    <div class="tile-value" id="tile-submit-rate">&mdash;</div></div>
+    <div class="tile"><div class="tile-label">Avg response</div>   <div class="tile-value" id="tile-avg-response">&mdash;</div></div>
+    <div class="tile"><div class="tile-label">Avg on page</div>    <div class="tile-value" id="tile-avg-page">&mdash;</div></div>
+</div>
+
+<h2>Funnel</h2>
+<div class="chart-box"><canvas id="chart-funnel"></canvas></div>
+
+<h2>Variant comparison (A vs B)</h2>
+<div class="chart-box"><canvas id="chart-variants"></canvas></div>
+
+<p id="empty-state" class="empty" style="display:none;">
+    No events recorded yet. Open the message as a subject and click through to populate.
+</p>
+
+<p class="actions">
+    <a class="button" href="{{ url_for('campaign.detail', campaign_id=campaign.id) }}">&laquo; Back to campaign</a>
+</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
