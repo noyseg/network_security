@@ -73,7 +73,10 @@ class TestFakeSubmit:
         )
         assert r.status_code == 200
         body = r.get_json()
-        assert body.get("redirect") == "/landing/debrief"
+        # Redirect points at the debrief page; a query string on the URL
+        # is fine (it lets the debrief know who arrived).
+        redirect_url = body.get("redirect", "")
+        assert redirect_url.startswith("/landing/debrief")
         assert _count(app, cid, EVENT_FAKE_SUBMIT_ATTEMPTED) == 1
 
     def test_metadata_contains_only_field_count(self, app, client):
@@ -83,10 +86,8 @@ class TestFakeSubmit:
             json={"subject_code": "subject-01", "variant": "A", "field_count": 2},
         )
         rows = _all_metadata(app, cid)
-        # At least one submit event row has metadata.
         submit_metas = [json.loads(r) for r in rows if r]
         assert {"field_count": 2} in submit_metas
-        # No row metadata contains any other keys.
         for meta in submit_metas:
             if "field_count" in meta:
                 assert set(meta.keys()) == {"field_count"}
