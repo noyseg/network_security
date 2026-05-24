@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Debrief (simulated){% endblock %}
+
+{% block content %}
+<div class="sim-banner">
+    SIMULATED &mdash; educational debrief
+</div>
+
+<h1>What just happened</h1>
+<p>You interacted with a controlled phishing simulation built for the
+   Network Security mini-project. The form you saw was a fake login page
+   served by the local development server. No real email was sent, no
+   real organization was impersonated, and nothing you typed was read,
+   transmitted, or stored. The only thing recorded was that the form
+   was submitted &mdash; not what was in it.</p>
+
+<h2>Why this matters</h2>
+<p>Most successful real-world attacks follow the same pattern this
+   simulation reproduces: a plausible message, a credible-looking link,
+   and a login form that mimics a service you trust. The most effective
+   defense is to pause before clicking, verify the destination, and
+   never enter credentials on a page reached through a link in an
+   unexpected message.</p>
+
+<p class="actions">
+    <a class="button" href="/admin/campaigns">Back to campaigns</a>
+</p>
+{% endblock %}

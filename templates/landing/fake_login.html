@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Sign in (simulated){% endblock %}
+
+{% block content %}
+<div class="sim-banner">
+    SIMULATED LANDING PAGE &mdash; educational test, no credentials are stored
+</div>
+
+<h1>Sign in</h1>
+<p class="hint">This page is a controlled simulation. Anything you type
+   here is never read, never transmitted, and never stored. Only the
+   number of input fields submitted is recorded.</p>
+
+<form id="fake-login-form" method="post" action="/landing/{{ campaign_id }}/submit">
+    <label>
+        Username
+        <input type="text" name="username" autocomplete="off">
+    </label>
+    <label>
+        Password
+        <input type="password" name="password" autocomplete="off">
+    </label>
+    <button type="submit">Sign in</button>
+</form>
+
+<script>
+(function () {
+    var form = document.getElementById('fake-login-form');
+    form.addEventListener('submit', function (evt) {
+        evt.preventDefault();
+        var fieldCount = form.querySelectorAll('input').length;
+        fetch('/landing/{{ campaign_id }}/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                subject_code: {{ subject_code | tojson }},
+                variant: {{ variant | tojson }},
+                field_count: fieldCount
+            })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data && data.redirect) {
+                window.location = data.redirect;
+            }
+        });
+    });
+}());
+</script>
+{% endblock %}

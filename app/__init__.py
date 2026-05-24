@@ -43,13 +43,14 @@ def create_app(config_object: type = Config) -> Flask:
     from app.campaign.routes import bp as campaign_bp
     from app.message.routes import bp as message_bp
     from app.logging_mod.routes import bp as logging_bp
+    from app.landing.routes import bp as landing_bp
 
     app.register_blueprint(campaign_bp)
     app.register_blueprint(message_bp)
     app.register_blueprint(logging_bp)
+    app.register_blueprint(landing_bp)
 
     # Feature modules still to be added in subsequent commits:
-    #   - app.landing.routes
     #   - app.dashboard.routes
 
     @app.get("/")
