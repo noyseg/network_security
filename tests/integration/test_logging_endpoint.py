@@ -1,7 +1,5 @@
 """Integration tests for ``POST /events/ping``."""
 
-import pytest
-
 
 def _make_campaign(client):
     r = client.post("/admin/campaigns", data={

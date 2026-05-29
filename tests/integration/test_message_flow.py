@@ -1,7 +1,5 @@
 """Integration tests for the message routes (preview + view + pixel)."""
 
-import pytest
-
 from app.constants import EVENT_MESSAGE_OPENED
 
 

@@ -1,7 +1,5 @@
 """Integration tests for the dashboard routes."""
 
-import pytest
-
 
 def _make_campaign(client, template_type="single"):
     r = client.post("/admin/campaigns", data={

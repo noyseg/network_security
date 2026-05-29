@@ -1,7 +1,5 @@
 """Integration tests for the campaign authoring routes."""
 
-import pytest
-
 
 VALID_PAYLOAD = {
     "title": "Demo phish 01",

@@ -14,8 +14,6 @@ function-level unit test. They are deliberately separate from
 import os
 import re
 
-import pytest
-
 from config import Config
 
 

@@ -151,7 +151,7 @@ pre.body {
 .actions { margin-top: 1.5rem; }
 .actions .button + .button { margin-left: 0.5rem; }
 
-/* ---- Simulated message (commit 5) -------------------------------- */
+/* ---- Simulated message -------------------------------------------- */
 .sim-banner {
     background: #fef3c7;
     color: #92400e;
@@ -203,7 +203,7 @@ pre.body {
     background: #b91c1c;
 }
 
-/* ---- Dashboard (commit 11) --------------------------------------- */
+/* ---- Dashboard ---------------------------------------------------- */
 .tile-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
