@@ -24,3 +24,11 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# Internal planning docs (kept local only, not tracked)
+IMPLEMENTATION_PLAN.md
+PLANNING.md
+REMAINING_COMMITS.md
+
+# Claude Code local config
+.claude/
