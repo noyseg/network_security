@@ -88,6 +88,23 @@ pytest tests/integration      # route + flow + seed + credential-leak tests
 The tests run against a fresh temporary SQLite database, so they never touch
 `data/phishing_sim.sqlite`.
 
+### End-to-end browser test (optional)
+
+A Playwright test (`tests/e2e/`) drives a real Chromium browser through the
+whole funnel — author a campaign, view as a subject, click, submit the fake
+login, reach the debrief, read the dashboard — and asserts the dashboard shows
+the funnel numbers while nothing typed into the form is ever stored. Its
+dependencies are kept out of the core install:
+
+```
+pip install -r requirements-e2e.txt
+playwright install chromium
+pytest tests/e2e
+```
+
+If Playwright is not installed, the e2e module is skipped, so a plain `pytest`
+stays green and dependency-light.
+
 ## Project Layout
 
 ```

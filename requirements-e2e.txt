@@ -1,0 +1,13 @@
+# Optional end-to-end (browser) test dependencies.
+# Not part of the core install (kept out of requirements.txt to keep the
+# core dependency surface small). Install separately, then download the
+# browser binary:
+#
+#     pip install --only-binary :all: -r requirements-e2e.txt
+#     playwright install chromium
+#     pytest tests/e2e
+#
+# The --only-binary flag avoids compiling greenlet (a Playwright
+# dependency) from source, which fails without a full C/MSVC toolchain.
+#
+pytest-playwright==0.7.1
