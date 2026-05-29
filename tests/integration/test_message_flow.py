@@ -39,6 +39,13 @@ class TestPreview:
         client.get(f"/message/{cid}/preview")
         assert _count_events(app, cid, EVENT_MESSAGE_OPENED) == 0
 
+    def test_preview_cta_points_at_landing_preview(self, client):
+        cid = _make_campaign(client)
+        r = client.get(f"/message/{cid}/preview")
+        # In preview the lure must lead to the side-effect-free landing
+        # preview, not the real (subject-required, logging) landing route.
+        assert f"/landing/{cid}/preview".encode() in r.data
+
 
 class TestSubjectView:
     def test_view_renders(self, client):

@@ -30,7 +30,11 @@
             <td>{{ c.sender_name }}</td>
             <td>{{ c.template_type }}</td>
             <td>{{ c.created_at }}</td>
-            <td><a href="{{ url_for('campaign.detail', campaign_id=c.id) }}">view</a></td>
+            <td>
+                <a href="{{ url_for('campaign.detail', campaign_id=c.id) }}">view</a>
+                &middot;
+                <a href="/landing/{{ c.id }}/preview">landing</a>
+            </td>
         </tr>
     {% endfor %}
     </tbody>

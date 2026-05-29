@@ -6,6 +6,7 @@
 {% block content %}
 <div class="sim-banner">
     SIMULATED LANDING PAGE &mdash; educational test, no credentials are stored
+    {% if preview %}&mdash; <strong>PREVIEW</strong> (admin view &mdash; nothing is recorded){% endif %}
 </div>
 
 <h1>Sign in</h1>
@@ -13,7 +14,7 @@
    here is never read, never transmitted, and never stored. Only the
    number of input fields submitted is recorded.</p>
 
-<form id="fake-login-form" method="post" action="/landing/{{ campaign_id }}/submit">
+<form id="fake-login-form" method="post" action="/landing/{{ campaign_id }}/submit"{% if preview %} onsubmit="return false;"{% endif %}>
     <label>
         Username
         <input type="text" name="username" autocomplete="off">
@@ -27,6 +28,8 @@
 {% endblock %}
 
 {% block scripts %}
+{% if not preview %}
 <script src="{{ url_for('static', filename='js/tracker.js') }}"></script>
 <script>tracker.start();</script>
+{% endif %}
 {% endblock %}

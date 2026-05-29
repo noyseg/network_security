@@ -1,11 +1,13 @@
 """HTTP routes for the landing module.
 
-* ``GET  /landing/<id>``        — fake login page; emits link_clicked +
+* ``GET  /landing/<id>``         — fake login page; emits link_clicked +
   landing_visited server-side.
-* ``POST /landing/<id>/submit`` — safe submit; accepts only
+* ``GET  /landing/<id>/preview`` — admin preview of the fake login page;
+  side-effect free (no events, no tracker.js).
+* ``POST /landing/<id>/submit``  — safe submit; accepts only
   ``{subject_code, variant, field_count}``. The endpoint itself cannot
   receive field names or values.
-* ``GET  /landing/debrief``     — educational debrief page.
+* ``GET  /landing/debrief``      — educational debrief page.
 """
 
 from flask import Blueprint, jsonify, render_template, request
@@ -16,6 +18,7 @@ from app.constants import (
     EVENT_LINK_CLICKED,
     TEMPLATE_SINGLE,
     VARIANT_A,
+    VARIANT_B,
 )
 from app.landing import service
 from app.logging_mod import service as logging_service
@@ -60,6 +63,32 @@ def landing_page(campaign_id: int):
         campaign_id=campaign_id,
         subject_code=subject_code,
         variant=variant,
+    )
+
+
+@bp.get("/<int:campaign_id>/preview")
+def landing_preview(campaign_id: int):
+    """Admin preview of the fake login page exactly as a subject sees it.
+
+    Side-effect free: records no events and loads no tracker.js, so an
+    instructor can inspect the lure without polluting the funnel data.
+    """
+    campaign = campaign_service.get_campaign(campaign_id)
+    if campaign is None:
+        return f"campaign {campaign_id} not found", 404
+
+    variant = (request.args.get("variant") or "").strip().upper()
+    if variant not in (VARIANT_A, VARIANT_B):
+        variant = VARIANT_A
+    if campaign["template_type"] == TEMPLATE_SINGLE:
+        variant = VARIANT_A
+
+    return render_template(
+        "landing/fake_login.html",
+        campaign_id=campaign_id,
+        subject_code="",
+        variant=variant,
+        preview=True,
     )
 
 

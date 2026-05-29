@@ -23,6 +23,14 @@
 
 <p class="actions">
     <a class="button" href="/message/{{ campaign.id }}/preview">Preview message</a>
+    {% if campaign.template_type == 'ab' %}
+    <a class="button" href="/landing/{{ campaign.id }}/preview?variant=A">View landing (A)</a>
+    <a class="button" href="/landing/{{ campaign.id }}/preview?variant=B">View landing (B)</a>
+    {% else %}
+    <a class="button" href="/landing/{{ campaign.id }}/preview">View landing page</a>
+    {% endif %}
     <a class="button" href="/admin/dashboard/{{ campaign.id }}">Open dashboard</a>
 </p>
+<p class="hint">&ldquo;View landing page&rdquo; shows exactly what a subject sees after
+   clicking the lure &mdash; as a preview, it records nothing.</p>
 {% endblock %}

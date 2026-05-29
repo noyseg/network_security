@@ -139,3 +139,36 @@ class TestNoSensitiveValuesEverStored:
                         f"events.metadata_json contains a string value "
                         f"under key {k!r}: {v!r}"
                     )
+
+
+class TestLandingPreview:
+    """The admin landing preview must be completely side-effect free."""
+
+    def test_preview_renders_the_login_form(self, client):
+        cid = _make_campaign(client)
+        r = client.get(f"/landing/{cid}/preview")
+        assert r.status_code == 200
+        assert b"fake-login-form" in r.data
+        assert b"PREVIEW" in r.data
+
+    def test_preview_records_no_events(self, app, client):
+        cid = _make_campaign(client)
+        client.get(f"/landing/{cid}/preview")
+        client.get(f"/landing/{cid}/preview?variant=B")
+        from app import db as db_module
+        with app.app_context():
+            conn = db_module.get_connection()
+            n = conn.execute(
+                "SELECT COUNT(*) AS n FROM events WHERE campaign_id = ?",
+                (cid,),
+            ).fetchone()["n"]
+        assert n == 0
+
+    def test_preview_does_not_load_tracker_js(self, client):
+        cid = _make_campaign(client)
+        r = client.get(f"/landing/{cid}/preview")
+        assert b"tracker.js" not in r.data
+
+    def test_preview_unknown_campaign_404(self, client):
+        r = client.get("/landing/9999/preview")
+        assert r.status_code == 404

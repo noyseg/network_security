@@ -76,13 +76,22 @@ def render_context(
             chosen,
         )
 
-    # Landing URL carries the subject + variant so the landing route can
-    # log the click for the right pair.
-    landing_query = {}
-    if subject_code:
-        landing_query["subject"] = subject_code
-    landing_query["variant"] = chosen
-    landing_url = f"{campaign['landing_path']}?{urlencode(landing_query)}"
+    # Landing URL. In preview there is no subject, so point the lure at
+    # the side-effect-free landing preview — that lets an admin click
+    # through the whole flow without recording anything (and avoids the
+    # real landing route's "missing subject" rejection). In subject view
+    # the CTA carries subject + variant so the click logs for the right pair.
+    if preview:
+        landing_url = (
+            f"/landing/{int(campaign_id)}/preview"
+            f"?{urlencode({'variant': chosen})}"
+        )
+    else:
+        landing_query = {}
+        if subject_code:
+            landing_query["subject"] = subject_code
+        landing_query["variant"] = chosen
+        landing_url = f"{campaign['landing_path']}?{urlencode(landing_query)}"
 
     pixel_query = {"variant": chosen}
     if subject_code:
