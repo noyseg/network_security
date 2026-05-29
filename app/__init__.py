@@ -52,6 +52,14 @@ def create_app(config_object: type = Config) -> Flask:
     app.register_blueprint(landing_bp)
     app.register_blueprint(dashboard_bp)
 
+    # Opt-in demo data: only when DEMO_MODE is truthy and the campaigns
+    # table is empty (the seeder enforces the empty check). Wrapped in an
+    # app context so connections cache on g and the teardown closes them.
+    if app.config.get("DEMO_MODE"):
+        with app.app_context():
+            from app.campaign import service as campaign_service
+            campaign_service.seed_demo_campaigns()
+
     @app.get("/")
     def _index():
         return redirect("/admin/campaigns")
