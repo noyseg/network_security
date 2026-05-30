@@ -33,4 +33,78 @@
 </p>
 <p class="hint">&ldquo;View landing page&rdquo; shows exactly what a subject sees after
    clicking the lure &mdash; as a preview, it records nothing.</p>
+
+<h2>Recipients</h2>
+<p class="hint">Approved internal test addresses only, one per line (commas also
+   work). Duplicates and blank lines are ignored.</p>
+
+{% if recipients_error %}<p class="error">{{ recipients_error }}</p>{% endif %}
+{% if recipients_saved %}<p class="hint">{{ recipients_saved }}</p>{% endif %}
+
+<form method="post" action="/admin/campaigns/{{ campaign.id }}/recipients">
+    <label>
+        Recipient emails (one per line)
+        <textarea name="recipients" rows="6"
+                  placeholder="alice@example.test&#10;bob@example.test">{{ recipients_text }}</textarea>
+    </label>
+    <button type="submit">Save recipients</button>
+</form>
+
+<h2>Send test email</h2>
+<p class="hint">Sends the simulated message to the recipients above. Sandbox mode
+   (the default) records to a local outbox and sends nothing over the network.</p>
+<p class="actions">
+    <button type="button" id="send-test-btn" class="button"
+            data-campaign-id="{{ campaign.id }}">Send test email</button>
+</p>
+<div id="send-test-result"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var btn = document.getElementById('send-test-btn');
+    if (!btn) return;
+    var result = document.getElementById('send-test-result');
+    btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-campaign-id');
+        var original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Sending…';
+        result.textContent = '';
+        result.className = '';
+        fetch('/admin/campaigns/' + id + '/send-test', { method: 'POST' })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data || !data.ok) {
+                    result.className = 'error';
+                    result.textContent = (data && data.error) || 'Send failed.';
+                    return;
+                }
+                var s = data.summary;
+                result.className = 'hint';
+                result.textContent = s.failed
+                    ? 'Sent to ' + s.sent + ' recipient(s), ' + s.failed + ' failed.'
+                    : 'Test email sent to ' + s.sent + ' recipient(s).';
+                if (s.errors && s.errors.length) {
+                    var ul = document.createElement('ul');
+                    s.errors.forEach(function (e) {
+                        var li = document.createElement('li');
+                        li.textContent = e.recipient + ': ' + e.error;
+                        ul.appendChild(li);
+                    });
+                    result.appendChild(ul);
+                }
+            })
+            .catch(function () {
+                result.className = 'error';
+                result.textContent = 'Network error while sending.';
+            })
+            .finally(function () {
+                btn.disabled = false;
+                btn.textContent = original;
+            });
+    });
+}());
+</script>
 {% endblock %}

@@ -245,3 +245,16 @@ class TestAllowedEventTypesMatchesConstants:
             C.EVENT_LANDING_EXITED,
         }
         assert named == set(Config.ALLOWED_EVENT_TYPES)
+
+
+class TestMailDefaultsSafe:
+    """The mail layer must be safe-by-default: no real send unless explicitly
+    opted in via configuration. Real sending is an authorized opt-in only;
+    everything else stays sandboxed."""
+
+    def test_default_mail_mode_is_sandbox(self):
+        assert Config.MAIL_MODE == "sandbox"
+
+    def test_get_mail_sender_defaults_to_sandbox(self):
+        from app.mail.service import SandboxMailSender, get_mail_sender
+        assert isinstance(get_mail_sender(1), SandboxMailSender)

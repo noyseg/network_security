@@ -214,3 +214,37 @@ class TestIsValidSubjectCode:
     )
     def test_rejects_invalid(self, code):
         assert is_valid_subject_code(code) is False
+
+
+class TestIsValidEmail:
+    @pytest.mark.parametrize(
+        "addr",
+        [
+            "a@b.co",
+            "alice@example.test",
+            "x.y+z@sub.example.org",
+            "  trimmed@example.test  ",
+        ],
+    )
+    def test_accepts_plain_addresses(self, addr):
+        from app.validators import is_valid_email
+        assert is_valid_email(addr) is True
+
+    @pytest.mark.parametrize(
+        "addr",
+        [
+            "",
+            "   ",
+            "foo",
+            "foo@",
+            "@bar.com",
+            "a b@c.com",
+            "a@b",        # no dot in host
+            "a@@b.com",
+            123,
+            None,
+        ],
+    )
+    def test_rejects_malformed(self, addr):
+        from app.validators import is_valid_email
+        assert is_valid_email(addr) is False

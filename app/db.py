@@ -67,6 +67,31 @@ SCHEMA_STATEMENTS = (
             'form_interaction_started'
         )
     """,
+    # Per-campaign recipient list (approved internal test addresses only).
+    # The UNIQUE constraint deduplicates addresses within a campaign.
+    """
+    CREATE TABLE IF NOT EXISTS recipients (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        campaign_id INTEGER NOT NULL REFERENCES campaigns(id),
+        email       TEXT NOT NULL,
+        created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (campaign_id, email)
+    )
+    """,
+    # Local record of test emails the system "sent". In sandbox mode this
+    # is the only place mail goes (no network). Lets the UI/tests inspect
+    # what would be delivered.
+    """
+    CREATE TABLE IF NOT EXISTS outbox (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        campaign_id INTEGER NOT NULL REFERENCES campaigns(id),
+        to_addr     TEXT NOT NULL,
+        subject     TEXT NOT NULL,
+        body        TEXT NOT NULL,
+        mode        TEXT NOT NULL,
+        created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
 )
 
 

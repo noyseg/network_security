@@ -15,6 +15,7 @@ from app.validators import (
     is_landing_link_local,
     is_sender_fictional,
     is_template_safe,
+    is_valid_email,
 )
 from config import Config
 
@@ -100,17 +101,78 @@ def create_campaign(payload: dict) -> int:
 
 
 def get_campaign(campaign_id: int) -> Optional[dict]:
-    """Return one campaign by ID, or ``None`` if not found."""
+    """Return one campaign by ID (with its ``recipients``), or ``None``."""
     try:
         cid = int(campaign_id)
     except (TypeError, ValueError) as exc:
         raise ValueError("campaign_id must be an integer") from exc
-    return models.get_campaign_by_id(cid)
+    campaign = models.get_campaign_by_id(cid)
+    if campaign is None:
+        return None
+    campaign["recipients"] = models.list_recipients(cid)
+    return campaign
 
 
 def list_campaigns() -> list[dict]:
     """Return all campaigns ordered newest first."""
     return models.list_campaigns()
+
+
+# --- Recipients -------------------------------------------------------------
+
+
+def parse_recipient_lines(raw) -> list[str]:
+    """Normalize raw recipient input into a clean, validated email list.
+
+    Accepts a multiline string (one address per line; commas also split)
+    or a list. Trims whitespace, drops blank lines, deduplicates
+    case-insensitively (preserving first-seen casing and order), validates
+    each address, and enforces the ``MAX_RECIPIENTS`` cap.
+
+    Raises ``ValueError`` naming the first invalid address.
+    """
+    if isinstance(raw, str):
+        items = raw.replace(",", "\n").splitlines()
+    else:
+        items = list(raw or [])
+
+    seen: set = set()
+    result: list[str] = []
+    for item in items:
+        email = (item or "").strip()
+        if not email:
+            continue
+        if not is_valid_email(email):
+            raise ValueError(f"invalid email address: {email!r}")
+        key = email.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(email)
+
+    if len(result) > Config.MAX_RECIPIENTS:
+        raise ValueError(
+            f"too many recipients (max {Config.MAX_RECIPIENTS})"
+        )
+    return result
+
+
+def get_recipients(campaign_id: int) -> list[str]:
+    """Return the campaign's recipient email list."""
+    return models.list_recipients(int(campaign_id))
+
+
+def set_recipients(campaign_id: int, raw) -> list[str]:
+    """Validate and persist the campaign's recipient list. Returns it.
+
+    Raises ``ValueError`` for an unknown campaign or any invalid address.
+    """
+    cid = int(campaign_id)
+    if models.get_campaign_by_id(cid) is None:
+        raise ValueError(f"campaign {cid} does not exist")
+    emails = parse_recipient_lines(raw)
+    models.replace_recipients(cid, emails)
+    return emails
 
 
 # --- Demo seeding -----------------------------------------------------------

@@ -15,16 +15,28 @@ credentials.
 1. **Local / lab use only.** The development server binds to `127.0.0.1`.
 2. **No real organizations.** Sender names and template bodies are checked
    against a blocklist of real brands before a campaign can be saved.
-3. **No real users.** Test subjects are pseudonymous internal labels
-   (e.g. `subject-01`) — never real email addresses.
+3. **No real users in the funnel.** Subjects (the labels written into the
+   `events` table) are pseudonymous — never real email addresses. The
+   optional per-campaign recipient list (for the "Send test email" action)
+   stores internal test addresses locally, but those addresses never enter
+   the events table; clicks are still attributed via a derived pseudonymous
+   code.
 4. **No real passwords.** The fake submit endpoint accepts only an integer
    field count; it cannot receive names or values.
 5. **Safe logging only.** Events are limited to a closed allow-list and a
    credential-payload guard runs on every event write.
+6. **Safe-by-default mail.** Test-email sending is **sandboxed by default**
+   (records to a local outbox, no network). A real SMTP adapter is an
+   explicit opt-in for authorized internal training, gated by env config.
+   The real `From` is always the configured account — **sender identity is
+   never spoofed** — and the landing page still captures nothing but a
+   field count.
 
 These rules are encoded in code (`app/validators.py`, the Logging service's
-`record_event`) and pinned by tests (`tests/unit/test_validators.py`,
-`tests/unit/test_safety.py`, `tests/integration/test_no_credentials_stored.py`).
+`record_event`, `app/mail/service.py`) and pinned by tests
+(`tests/unit/test_validators.py`, `tests/unit/test_safety.py`,
+`tests/integration/test_no_credentials_stored.py`,
+`tests/integration/test_send_test_email.py`).
 
 ## Run It
 
@@ -76,6 +88,49 @@ idempotent — restarting will not duplicate data). It is off by default. Open
    comparison, and average-time tiles. Data comes from
    `/admin/dashboard/<id>/data` as JSON `{campaign, totals, variants}`.
 
+## Recipients & test email
+
+Each campaign has its own recipient list (approved internal test addresses).
+On the campaign detail page:
+
+- **Recipients section** — paste one email per line (commas also split).
+  Whitespace is trimmed, blank lines ignored, duplicates collapsed
+  case-insensitively, each address validated, capped at `MAX_RECIPIENTS`.
+- **"Send test email" button** — sends the simulated message to every
+  recipient and shows an inline summary (`Sent to N recipient(s)`, with a
+  per-recipient error list if any failed).
+
+The email contains the campaign's subject + body and a link back to the
+local message view; clicks are tracked via a **derived pseudonymous code
+per recipient** (e.g. `r3-1a2b3c4d`), so real email addresses never enter
+the `events` table.
+
+### Mail mode (sandbox by default)
+
+```
+# Sandbox (default): records to a local `outbox` table, NEVER touches the network.
+python run.py
+
+# Real SMTP (opt-in, authorized internal training only).
+# Example with a local MailHog catch-all:
+$env:MAIL_MODE = "smtp"
+$env:MAIL_SMTP_HOST = "127.0.0.1"
+$env:MAIL_SMTP_PORT = "1025"
+$env:MAIL_FROM = "phishing-sim@internal.lab"
+$env:MAIL_ALLOWED_DOMAINS = "internal.lab"   # strongly recommended
+python run.py
+```
+
+Env knobs: `MAIL_MODE` (`sandbox`|`smtp`), `MAIL_FROM`, `MAIL_SMTP_HOST`,
+`MAIL_SMTP_PORT`, `MAIL_SMTP_USER`, `MAIL_SMTP_PASSWORD` (secret — env
+only), `MAIL_SMTP_USE_TLS`, `MAIL_ALLOWED_DOMAINS` (comma-separated),
+`APP_BASE_URL` (link target).
+
+**Guardrails kept under both modes:** the real `From` is always
+`MAIL_FROM` (no sender spoofing); the landing page captures only a field
+count (no credential capture); the outbox is the audit trail; recipient
+addresses never enter the funnel's `events` table.
+
 ## Test It
 
 ```
@@ -115,6 +170,7 @@ network_security/
 │   ├── landing/        Fake login page, safe submit, debrief
 │   ├── logging_mod/    record_event — the ONLY writer of the events table
 │   ├── dashboard/      Aggregate events into funnel + A/B numbers
+│   ├── mail/           Sandbox-default mail sender + SMTP opt-in
 │   ├── db.py           Connection lifecycle + schema bootstrap
 │   ├── models.py       The ONLY module that contains SQL
 │   ├── validators.py   Ethics guards

@@ -5,10 +5,23 @@ this file. Other modules call these guards before doing anything that
 touches the database or renders user-visible content.
 """
 
+import re
 from typing import Any
 from urllib.parse import urlparse
 
 from config import Config
+
+
+# Practical (not full RFC 5322) email check: one @, no spaces, a dotted host.
+# Good enough for validating internal test-recipient addresses.
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def is_valid_email(value: str) -> bool:
+    """Return True iff ``value`` looks like a single, well-formed address."""
+    if not isinstance(value, str):
+        return False
+    return bool(_EMAIL_RE.match(value.strip()))
 
 
 # --- Sender / template body --------------------------------------------------

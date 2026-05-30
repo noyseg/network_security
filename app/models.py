@@ -247,3 +247,62 @@ def list_subjects_with_event(
             (int(campaign_id), event_type, variant),
         ).fetchall()
     return [int(r["subject_id"]) for r in rows]
+
+
+# --- Recipients -------------------------------------------------------------
+
+
+def list_recipients(campaign_id: int) -> list[str]:
+    """Return all recipient emails for a campaign, oldest first."""
+    conn = get_connection()
+    rows = conn.execute(
+        "SELECT email FROM recipients WHERE campaign_id = ? ORDER BY id ASC",
+        (int(campaign_id),),
+    ).fetchall()
+    return [r["email"] for r in rows]
+
+
+def replace_recipients(campaign_id: int, emails: list[str]) -> None:
+    """Atomically replace a campaign's recipient list with ``emails``.
+
+    Callers pass an already-validated, de-duplicated list (the service
+    layer enforces those rules); this function only persists.
+    """
+    conn = get_connection()
+    with conn:
+        conn.execute(
+            "DELETE FROM recipients WHERE campaign_id = ?", (int(campaign_id),)
+        )
+        conn.executemany(
+            "INSERT INTO recipients (campaign_id, email) VALUES (?, ?)",
+            [(int(campaign_id), email) for email in emails],
+        )
+
+
+# --- Outbox -----------------------------------------------------------------
+
+
+def insert_outbox(
+    campaign_id: int, to_addr: str, subject: str, body: str, mode: str
+) -> int:
+    """Record one delivered/attempted test email and return its ID."""
+    conn = get_connection()
+    cur = conn.execute(
+        """
+        INSERT INTO outbox (campaign_id, to_addr, subject, body, mode)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (int(campaign_id), to_addr, subject, body, mode),
+    )
+    conn.commit()
+    return int(cur.lastrowid)
+
+
+def list_outbox(campaign_id: int) -> list[dict]:
+    """Return all outbox rows for a campaign, newest first."""
+    conn = get_connection()
+    rows = conn.execute(
+        "SELECT * FROM outbox WHERE campaign_id = ? ORDER BY id DESC",
+        (int(campaign_id),),
+    ).fetchall()
+    return [dict(r) for r in rows]

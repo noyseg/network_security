@@ -77,3 +77,28 @@ class Config:
     MAX_BODY_LENGTH = 10000
     MAX_SUBJECT_CODE_LENGTH = 40
     MAX_FIELD_COUNT = 20
+    MAX_RECIPIENTS = 500
+
+    # --- Mail (test-email sending) ---------------------------------------
+    # SAFE BY DEFAULT: "sandbox" records each message to a local outbox and
+    # never touches the network. "smtp" is an explicit opt-in for authorized
+    # internal training only. The real From address is always MAIL_FROM (the
+    # configured account) — the campaign sender_name is fictional display
+    # text only; sender identity is never spoofed.
+    MAIL_MODE = os.environ.get("MAIL_MODE", "sandbox")  # "sandbox" | "smtp"
+    MAIL_FROM = os.environ.get("MAIL_FROM", "phishing-sim@localhost")
+    MAIL_SMTP_HOST = os.environ.get("MAIL_SMTP_HOST", "")
+    MAIL_SMTP_PORT = int(os.environ.get("MAIL_SMTP_PORT", "1025"))
+    MAIL_SMTP_USER = os.environ.get("MAIL_SMTP_USER", "")
+    # Secret: supplied via environment only, never hardcoded.
+    MAIL_SMTP_PASSWORD = os.environ.get("MAIL_SMTP_PASSWORD", "")
+    MAIL_SMTP_USE_TLS = bool(int(os.environ.get("MAIL_SMTP_USE_TLS", "0")))
+    # Optional recipient-domain allowlist (comma-separated). Empty = no
+    # restriction. Strongly recommended when MAIL_MODE=smtp.
+    MAIL_ALLOWED_DOMAINS = tuple(
+        d.strip().lower()
+        for d in os.environ.get("MAIL_ALLOWED_DOMAINS", "").split(",")
+        if d.strip()
+    )
+    # Base URL used to build links inside test emails. Local by default.
+    APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://127.0.0.1:5000")
